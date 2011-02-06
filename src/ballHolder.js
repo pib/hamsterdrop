@@ -15,11 +15,13 @@ function() {
     var BallHolder = Object2D.extend(
         {
             player_number: null,
-            balls: [],
+            balls: null,
             ballCount: null,
             selector: null,
+            waiting: false,
             
             constructor: function(player_number, player_color) {
+                this.balls = [];
                 this.player_number = player_number;
                 this.color = player_color;
                 this.base("BallHolder");
@@ -49,6 +51,9 @@ function() {
             },
 
             onKeyDown: function(charCode) {
+                if ((HamsterDrop.current_player != this.player_number) || this.waiting)
+                    return true;
+
                 switch (charCode) {
                 case EventEngine.KEYCODE_LEFT_ARROW:
                     this.selector.moveLeft();
@@ -60,16 +65,29 @@ function() {
                     this.drop();
                     break;
                 }
+                return false;
             },
 
             drop: function() {
-                var selected = selector.selected;
+                var selected = this.selector.selected;
                 if (this.balls[selected]) {
-                    this.getComponent('holder').remote(this.balls[selected]);                    
+                    this.waiting = true;
+                    var ball = this.balls[selected];
+                    this.getComponent('holder').remove(ball);
+                    HamsterDrop.renderContext.add(ball);
+                    ball.drop(this, this.dropComplete);
+                    this.balls[selected] = null;
                 }
             },
 
+            dropComplete: function() {
+                this.waiting = false;
+                HamsterDrop.nextTurn();
+            },
+
             update: function(renderContext, time) {
+                renderContext.pushTransform();
+
                 this.base(renderContext, time);
 
                 if (HamsterDrop.current_player == this.player_number) {
@@ -77,6 +95,7 @@ function() {
                 } else {
                     this.setPosition(OFFSCREEN);
                 }
+                renderContext.popTransform();
             },
 
             getClassName: function() {

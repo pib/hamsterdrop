@@ -22,12 +22,12 @@ function() {
 
             obj: null,
             
-            player1: null,
-            player2: null,
+            players: [],
 
-            current_player: 1,
+            current_player: 0,
 
             setup: function() {
+                
                 Engine.setFPS(this.engineFPS);
 
                 this.fieldBox = Rectangle2D.create(0, 0, this.fieldWidth, this.fieldHeight);
@@ -36,10 +36,10 @@ function() {
 
                 Engine.getDefaultContext().add(this.renderContext);
 
-                this.player1 = BallHolder.create(1, 'blue');
-                this.renderContext.add(this.player1);
-                this.player2 = BallHolder.create(2, 'red');
-                this.renderContext.add(this.player2);
+                this.players.push(BallHolder.create(0, 'blue'));
+                this.renderContext.add(this.players[0]);
+                this.players.push(BallHolder.create(1, 'red'));
+                this.renderContext.add(this.players[1]);
 
                 this.startGame();
             },
@@ -50,6 +50,13 @@ function() {
 
             startGame: function() {
 
+            },
+
+            nextTurn: function() {
+                if (this.current_player == 0)
+                    this.current_player = 1;
+                else
+                    this.current_player = 0;
             },
 
             getRenderContext: function() {

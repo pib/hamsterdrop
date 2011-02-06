@@ -11,6 +11,7 @@ function() {
             moveVec: null,
             shape: null,
             dropping: false,
+            notify: null,
             
             constructor: function(color, width, height, x, y) {
                 this.base("Ball");
@@ -25,6 +26,11 @@ function() {
                 this.setPosition(Point2D.create(x, y));
 
                 this.moveVec = Vector2D.create(0, 2);
+            },
+
+            drop: function(notifiee, callback) {
+                this.dropping = true;
+                this.notify = {notifiee: notifiee, callback: callback};
             },
 
             update: function(renderContext, time) {
@@ -73,6 +79,11 @@ function() {
                         pos.setY(0);
                     }
 			    }
+
+                if (this.moveVec.x == 0 && this.moveVec.y == 0) {
+                    this.notify.callback.call(this.notify.notifiee);
+                    this.dropping = false;
+                }
 
 			    this.setPosition(pos);
 		    },
