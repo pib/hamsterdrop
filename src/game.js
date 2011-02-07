@@ -42,7 +42,6 @@ function() {
                 this.spriteLoader = SpriteLoader.create();
 
                 this.spriteLoader.load('hamster', this.getFilePath('resources/hamster.sprite.json'));
-                console.log(this.getFilePath('resources/hamsterball.sprite.json'));
                 this.spriteLoader.load('hamsterball', this.getFilePath('resources/hamsterball.sprite.json'));
 
                 Timeout.create('resourceWait', 250, function() {
