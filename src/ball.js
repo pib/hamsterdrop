@@ -1,4 +1,5 @@
 Engine.include('/components/component.transform2d.js');
+Engine.include('/components/component.sprite.js');
 Engine.include('/engine/engine.object2d.js');
 
 Engine.initObject('Ball', 'Object2D',
@@ -7,29 +8,34 @@ function() {
         {
             width: null,
             height: null,
-            color: '#ffdd00',
+            color: null,
             moveVec: null,
             shape: null,
-            dropping: false,
+            state: 'sitting',
             notify: null,
+            speed: 6,
             
             constructor: function(color, width, height, x, y) {
                 this.base("Ball");
                 this.color = color;
 
                 this.add(Transform2DComponent.create('move'));
+                this.sprites = HamsterDrop.spriteLoader.exportAll('hamsterball');
+                this.add(SpriteComponent.create('draw', this.sprites[color]));
 
                 this.width = width;
                 this.height = height;
                 this.shape = Rectangle2D.create(0, 0, this.width, this.height);
 
                 this.setPosition(Point2D.create(x, y));
+                this.setBoundingBox(this.sprites['blue'].getBoundingBox());
 
-                this.moveVec = Vector2D.create(0, 2);
+                this.moveVec = Vector2D.create(0, this.speed);
             },
 
             drop: function(notifiee, callback) {
-                this.dropping = true;
+                this.state = 'dropping';
+                this.setSprite(this.color + 'stand');
                 this.notify = {notifiee: notifiee, callback: callback};
             },
 
@@ -38,11 +44,9 @@ function() {
 
                 this.base(renderContext, time);
                 
-                if (this.dropping)
+                if (this.state != 'sitting')
                     this.move();
                 
-                this.draw(renderContext);
-
                 renderContext.popTransform();
             },
 
@@ -61,14 +65,8 @@ function() {
 
 			    // Determine if we hit a "wall" of our playfield
 			    var fieldBox = HamsterDrop.getFieldBox().get();
-			    if ((pos.x + this.width > fieldBox.r) || (pos.x < 0)) {
+			    if ((pos.x > fieldBox.r) || (pos.x < -this.width)) {
                     this.moveVec.setX(0);
-                    if (pos.x + this.width > fieldBox.r) {
-                        pos.setX(fieldBox.r - this.width - 1);
-                    }
-                    if (pos.x < 0) {
-                        pos.setX(0);
-                    }
 			    }
 			    if ((pos.y + this.height > fieldBox.b) || (pos.y < 0)) {
                     this.moveVec.setY(0);
@@ -80,23 +78,42 @@ function() {
                     }
 			    }
 
-                if (this.moveVec.x == 0 && this.moveVec.y == 0) {
-                    this.notify.callback.call(this.notify.notifiee);
-                    this.dropping = false;
+                if (this.state == 'dropping' && this.moveVec.y == 0) {
+                    this.doneDropping();
+                } else if (this.state == 'sliding' && this.moveVec.x == 0) {
+                    this.done();
                 }
 
 			    this.setPosition(pos);
 		    },
-            draw: function(renderContext) {
-			    // Generate a rectangle to represent our object
-			    var pos = this.getPosition();
 
-			    // Set the color to draw with
-			    renderContext.setFillStyle(this.color);
-			    renderContext.drawFilledRectangle(this.shape);
-                renderContext.setFillStyle('black');
-                renderContext.drawText(Point2D.create(0, this.height / 2), '"Ball"');
-		    },
+            doneDropping: function() {
+                var gridY = Math.floor(HamsterDrop.fieldHeight / this.height);
+
+                HamsterDrop.addScore(gridY);
+
+                if (gridY == HamsterDrop.gridHeight) {
+                    this.state = 'sliding';
+                    if (HamsterDrop.current_player == 0) {
+                        this.moveVec.setX(-this.speed);
+                        this.setSprite(this.color + 'left');
+                    } else {
+                        this.moveVec.setX(this.speed);
+                        this.setSprite(this.color + 'right');
+                    }
+                } else {
+                    this.done();
+                }
+            },
+
+            setSprite: function(name) {
+                this.getComponent('draw').setSprite(this.sprites[name]);  
+            },
+
+            done: function() {
+                this.state = 'sitting';
+                this.notify.callback.call(this.notify.notifiee);
+            },
 
             getClassName: function() {
                 return 'Ball';

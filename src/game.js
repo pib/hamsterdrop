@@ -1,5 +1,6 @@
 Engine.include('/rendercontexts/context.canvascontext.js');
 Engine.include('/components/component.notifier.js');
+Engine.include('/resourceloaders/loader.sprite.js');
 
 Engine.load('/src/gameGrid.js');
 Engine.load('/src/ballHolder.js');
@@ -19,12 +20,14 @@ function() {
 
             gridWidth: 16,
             gridHeight: 12,
+            grid: null,
 
             obj: null,
             
             players: [],
 
-            current_player: 0,
+            current_player: -1,
+            spriteLoader: null,
 
             setup: function() {
                 
@@ -35,13 +38,21 @@ function() {
                 this.renderContext.setBackgroundColor('black');
 
                 Engine.getDefaultContext().add(this.renderContext);
+                
+                this.spriteLoader = SpriteLoader.create();
 
-                this.players.push(BallHolder.create(0, 'blue'));
-                this.renderContext.add(this.players[0]);
-                this.players.push(BallHolder.create(1, 'red'));
-                this.renderContext.add(this.players[1]);
+                this.spriteLoader.load('hamster', this.getFilePath('resources/hamster.sprite.json'));
+                console.log(this.getFilePath('resources/hamsterball.sprite.json'));
+                this.spriteLoader.load('hamsterball', this.getFilePath('resources/hamsterball.sprite.json'));
 
-                this.startGame();
+                Timeout.create('resourceWait', 250, function() {
+                                   if (HamsterDrop.spriteLoader.isReady()) {
+                                       this.destroy();
+                                       HamsterDrop.startGame();
+                                   } else {
+                                       this.restart();
+                                   }
+                               });
             },
 
             teardown: function() {
@@ -49,7 +60,19 @@ function() {
             },
 
             startGame: function() {
+                this.grid = GameGrid.create(this.gridWidth, this.gridHeight);
+                this.renderContext.add(this.grid);
 
+                this.players.push({balls: BallHolder.create(0, 'blue'), score: 0});
+                this.renderContext.add(this.players[0].balls);
+                this.players.push({balls: BallHolder.create(1, 'red'), score: 0});
+                this.renderContext.add(this.players[1].balls);
+
+                this.current_player = 0;
+            },
+
+            addScore: function(gridY) {
+                this.players[this.current_player].score += gridY * gridY;
             },
 
             nextTurn: function() {

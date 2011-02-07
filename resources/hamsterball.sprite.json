@@ -1,0 +1,15 @@
+{
+    "bitmapImage": "images/hamsterball.png",
+    "bitmapSize": [160, 120],
+    "version": 2,
+    "sprites": {
+        "blue": [0, 0, 40, 40],
+        "bluestand": [40, 0, 40, 40],
+        "red": [80, 0, 40, 40],
+        "redstand": [120, 0, 40, 40],
+        "blueright": [0, 40, 40, 40, 2, 150, "loop"],
+        "blueleft": [0, 80, 40, 40, 2, 150, "loop"],
+        "redright": [80, 40, 40, 40, 2, 150, "loop"],
+        "redleft": [80, 80, 40, 40, 2, 150, "loop"]
+    }
+}

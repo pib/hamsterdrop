@@ -1,0 +1,10 @@
+{
+    "bitmapImage": "images/hamster.png",
+    "bitmapSize": [200, 40],
+    "version": 2,
+    "sprites": {
+        "stand": [80, 0, 40, 40],
+        "right": [0, 0, 40, 40, 2, 150, "loop"],
+        "left": [120, 0, 40, 40, 2, 150, "loop"]
+    }
+}

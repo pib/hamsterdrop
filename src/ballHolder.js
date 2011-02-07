@@ -64,6 +64,8 @@ function() {
                 case EventEngine.KEYCODE_DOWN_ARROW:
                     this.drop();
                     break;
+                default:
+                    return true;
                 }
                 return false;
             },
